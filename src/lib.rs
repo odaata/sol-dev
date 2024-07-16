@@ -78,21 +78,37 @@ mod test {
 
         let accounts = vec![account];
 
-        let increment_instruction_data: Vec<u8> = vec![0];
-        let decrement_instruction_data: Vec<u8> = vec![1];
+        let mut increment_instruction_data: Vec<u8> = vec![0];
+        let mut decrement_instruction_data: Vec<u8> = vec![1];
         let mut update_instruction_data: Vec<u8> = vec![2];
         let reset_instruction_data: Vec<u8> = vec![3];
 
+        let increment_value = 48u32;
+        increment_instruction_data.extend_from_slice(&increment_value.to_le_bytes());
         process_instruction(&program_id, &accounts, &increment_instruction_data).unwrap();
 
         assert_eq!(
             CounterAccount::try_from_slice(&accounts[0].data.borrow())
                 .unwrap()
                 .counter,
-            1
+            48
         );
 
+        let decrement_value = 16u32;
+        decrement_instruction_data.extend_from_slice(&decrement_value.to_le_bytes());
         process_instruction(&program_id, &accounts, &decrement_instruction_data).unwrap();
+
+        assert_eq!(
+            CounterAccount::try_from_slice(&accounts[0].data.borrow())
+                .unwrap()
+                .counter,
+            32
+        );
+
+        let mut big_decrement_instruction_data: Vec<u8> = vec![1];
+        let big_decrement_value = 100u32;
+        big_decrement_instruction_data.extend_from_slice(&big_decrement_value.to_le_bytes());
+        process_instruction(&program_id, &accounts, &big_decrement_instruction_data).unwrap();
 
         assert_eq!(
             CounterAccount::try_from_slice(&accounts[0].data.borrow())
